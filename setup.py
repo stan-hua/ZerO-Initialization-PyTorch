@@ -10,7 +10,7 @@ from setuptools import setup, find_packages
 # Set up package
 setup(
     name="zero_init",
-    version="0.3",
+    version="0.4",
     url="https://github.com/stan-hua/ZerO-Initialization-PyTorch",
     author="Stanley Hua",
     description="PyTorch implementation of ZerO Initialization",

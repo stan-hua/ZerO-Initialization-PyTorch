@@ -12,6 +12,7 @@ import torch
 from scipy.linalg import hadamard
 
 
+@torch.no_grad()
 def ZerO_Init_Linear(weight_matrix):
     """
     Perform ZerO initialization on a weight matrix.
@@ -50,6 +51,7 @@ def ZerO_Init_Linear(weight_matrix):
     return init_matrix
 
 
+@torch.no_grad()
 def ZerO_Init_Conv2d(weight_matrix):
     """
     Perform ZerO initialization on a Conv2d weight matrix.
@@ -88,6 +90,7 @@ def ZerO_Init_Conv2d(weight_matrix):
     return weight_tensor
 
 
+@torch.no_grad()
 def ZerO_Init(layer, verbose=False):
     """
     Perform ZerO initialization (in-place) on a Linear or Conv2d layer.
@@ -98,7 +101,7 @@ def ZerO_Init(layer, verbose=False):
         An arbitrary layer in a model
     """
     # CASE 1: Linear layer
-    if isinstance(layer, torch.nn.Linear):
+    if isinstance(layer, torch.nn.Linear) or isinstance(layer, torch.nn.Conv1d):
         layer.weight.data = ZerO_Init_Linear(layer.weight.data)
         if layer.bias is not None:
             torch.nn.init.constant_(layer.bias, 0)
@@ -107,6 +110,11 @@ def ZerO_Init(layer, verbose=False):
         layer.weight.data = ZerO_Init_Conv2d(layer.weight.data)
         if layer.bias is not None:
             torch.nn.init.constant_(layer.bias, 0)
+    # batchnorm initialization: "For ResNet with batch normalization, we follow the standard practice to initialize the scale and bias in batch normalization as one and zero"
+    elif isinstance(layer, torch.nn.BatchNorm1d) or isinstance(layer, torch.nn.BatchNorm2d) or isinstance(layer, torch.nn.BatchNorm3d):
+        torch.nn.init.constant_(layer.weight, 1)
+        torch.nn.init.constant_(layer.bias, 0)
+
     # CASE 3: Not implemented
     elif verbose:
         print(f"ZerO initialization is NOT implemented for the layer `{type(layer)}`!")
